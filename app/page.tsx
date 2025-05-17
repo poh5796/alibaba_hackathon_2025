@@ -10,14 +10,14 @@ import { useState } from 'react';
 export default function Home() {
   const { isLoggedIn, profile, logout } = useUserProfile();
   const router = useRouter();
-  const [language, setLanguage] = useState<'en' | 'my'>('en');
+  const [language, setLanguage] = useState<'en' | 'melayu'>('en');
 
   const handleLoginClick = () => {
     router.push('/profile'); // Redirect to form page
   };
 
   const toggleLanguage = () => {
-    setLanguage((prev) => (prev === 'en' ? 'my' : 'en'));
+    setLanguage((prev) => (prev === 'en' ? 'melayu' : 'en'));
     // Optionally add logic to persist language choice, e.g., context or i18n
   };
 
@@ -29,7 +29,7 @@ export default function Home() {
         {/* Top panel with language on left and auth actions on right */}
         <div className="w-full flex justify-between items-center mb-4">
           <Button variant="outline" onClick={toggleLanguage}>
-            {language === 'en' ? 'Melayu' : 'English'}
+            {language === 'en' ? 'English' : 'Melayu'}
           </Button>
           <div className="flex gap-2">
             {!isLoggedIn ? (
@@ -44,7 +44,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        <Chatbot />
+        <Chatbot language={language} />
       </main>
     </div>
   );

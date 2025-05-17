@@ -36,11 +36,11 @@ const filterReferences = (references: Document[]) => {
 	return uniqueReferences;
 };
 
-export const Chatbot = () => {
-	const { profile, isLoggedIn } = useUserProfile();
-	const [messages, setMessages] = useState<Message[]>([]);
-	const [input, setInput] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
+export const Chatbot = ({ language }: { language: 'en' | 'melayu' }) => {
+  const { profile, isLoggedIn } = useUserProfile();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false)
 
 	useEffect(() => {
 		const initMessage: Message = {
@@ -62,11 +62,11 @@ export const Chatbot = () => {
 		setIsLoading(true);
 		setInput("");
 
-		const response = await fetch("/api/chat", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ messages: updatedMessages, profile }),
-		});
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: updatedMessages, profile, language }),
+    });
 
 		const res = await response.json();
 		console.log(res);

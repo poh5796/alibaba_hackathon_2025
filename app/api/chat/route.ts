@@ -33,7 +33,9 @@ const languageMap: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, profile } = await req.json();
+    const { messages, profile, language } = await req.json();
+
+    messages[messages.length - 1].content =messages[messages.length - 1].content + `, answer in language ${language}.`
 
     const languageInstruction = profile?.language
       ? `Respond in ${languageMap[profile.language] || "the user's preferred language"}.`
