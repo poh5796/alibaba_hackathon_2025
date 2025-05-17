@@ -1,3 +1,4 @@
+import axios from "axios";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 
@@ -24,16 +25,31 @@ async function getAIResponse(message: string, profile?: any): Promise<string | n
     ? `You are an assistant helping a user named ${profile.name}, a ${profile.age}-year-old ${profile.occupation} living in ${profile.location}. They earn RM${profile.income} monthly. ${languageInstruction}`
     : `You are a helpful assistant for Malaysian government services.`;
 
-  const completion = await openai.chat.completions.create({
-    model: "qwen-plus", // Qwen model via DashScope
-    temperature: 0.7,   // Balanced creativity
-    messages: [
-      { role: "system", content: systemMessage },
-      { role: "user", content: message },
-    ],
+  const url = `https://dashscope-intl.aliyuncs.com/api/v1/apps/${appId}/completion`;
+
+  const inputData = {
+    input: {
+      prompt: message
+    },
+    body: JSON.stringify({
+      prompt: message,
+    }),
+    parameters: {},
+    debug: {}
+  };
+
+  const response = await axios.post(url, inputData, {
+    headers: {
+      'Authorization': `Bearer ${process.env.DASHSCOPE_API_KEY}`,
+      'Content-Type': 'application/json'
+    }
   });
 
-  return completion.choices[0].message.content;
+  if (response.statusText == "OK") {
+    return response.data.output.text;
+  } else {
+    throw new Error("Failed to fetch from PAI");
+  }
 }
 
 export async function POST(req: NextRequest) {
