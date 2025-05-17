@@ -21,12 +21,18 @@ export async function POST(req: NextRequest) {
       ? `Respond in ${languageMap[profile.language] || "the user's preferred language"}.`
       : "";
 
+    const incomeStatement = profile?.income
+      ? `The user has an income of RM${profile.income}.`
+      : "";
+
     const systemMessage = profile
-      ? `You are assisting ${profile.name}, a ${profile.age}-year-old ${profile.occupation} in ${profile.location}. ${languageInstruction}`
+      ? `You are assisting ${profile.name}, a ${profile.age}-year-old ${profile.occupation} in ${profile.location}. ${incomeStatement} ${languageInstruction} Based on the user's profile, provide relevant information and assistance.`
       : "You are a helpful assistant for Malaysian government services.";
 
+    const extendedsystemMessage = `When the users ask question, try to always provide direct links to the relevant government services. If the user asks about a specific service, provide a brief overview and direct them to the official website for more information. Always be polite and professional in your responses. ${systemMessage}`;
+
     // Prepend system message to the conversation history
-    const fullMessages = [{ role: "system", content: systemMessage }, ...messages];
+    const fullMessages = [{ role: "system", content: systemMessage + extendedsystemMessage }, ...messages];
 
     const completion = await openai.chat.completions.create({
       model: "qwen-plus",
