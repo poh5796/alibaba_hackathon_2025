@@ -82,9 +82,6 @@ export const Chatbot = () => {
               : "bg-muted"
               }`}
           >
-            {/* {msg.content.map(choice => {
-                return <span>{choice.message}</span>
-            })} */}
             {typeof msg.content === 'string' && msg.content}
             {typeof msg.content !== 'string' && msg.content.choices.map((choice, index) => {
               return <span key={index}>{choice.message.content}</span>
