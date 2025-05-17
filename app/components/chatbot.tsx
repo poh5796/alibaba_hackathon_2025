@@ -47,16 +47,8 @@ export const Chatbot = () => {
     const data = await response.json();
     setIsLoading(false)
 
-    const reply: string = (() => {
-      if (typeof data.reply === "string") return data.reply;
-      if (data.reply && Array.isArray(data.reply.choices)) {
-        return data.reply.choices[0]?.message?.content || "No reply";
-      }
-      return "Invalid response format";
-    })();
 
-
-    setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    setMessages((prev) => [...prev, { role: "assistant", content: data }]);
   };
 
   return (
