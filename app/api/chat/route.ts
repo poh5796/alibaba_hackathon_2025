@@ -1,4 +1,3 @@
-import pool from "@/app/lib/db";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 

@@ -8,7 +8,7 @@ export default function Home() {
   
 
   return (
-    <div className="flex h-screen w-screen bg-background text-foreground">
+    <div className="overflow-auto flex h-screen w-screen bg-background text-foreground">
       <Sidebar />
       <main className="flex min-h-screen w-full flex-col items-center justify-between p-8">
         <Chatbot />

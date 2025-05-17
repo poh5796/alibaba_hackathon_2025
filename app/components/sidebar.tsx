@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const Sidebar = () => {
   return (
-    <aside className="w-64 bg-muted p-4 flex flex-col gap-4">
+    <aside className="sticky top-0 w-64 bg-muted p-4 flex flex-col gap-4">
       <h2 className="text-lg font-semibold">Government Services</h2>
       <nav className="flex flex-col gap-2">
         <Link href="#" className="hover:underline">Apply for Passport</Link>
