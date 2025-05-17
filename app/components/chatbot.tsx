@@ -5,37 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import OpenAI from "openai";
+import ReactMarkdown from "react-markdown";
+import { Textarea } from "@/components/ui/textarea";
 
-interface Message {
-  role: "user" | "assistant";
-  content: string | ChatCompletionResponse;
-}
-
-export type ChatCompletionResponse = {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  system_fingerprint: string | null;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-    prompt_tokens_details: {
-      cached_tokens: number;
-    };
-  };
-  choices: Array<{
-    index: number;
-    message: {
-      role: "assistant" | "user" | "system";
-      content: string;
-    };
-    finish_reason: string;
-    logprobs: unknown | null;
-  }>;
+type Message = {
+  role: "assistant" | "user";
+  content: string;
 };
-
 
 export const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -45,6 +21,7 @@ export const Chatbot = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -52,6 +29,7 @@ export const Chatbot = () => {
 
     const newMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, newMessage]);
+    setIsLoading(true)
     setInput("");
 
     const response = await fetch("/api/chat", {
@@ -64,37 +42,49 @@ export const Chatbot = () => {
     });
 
     const data = await response.json();
-    console.log(data)
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: data.reply || "I'm here to help!" },
-    ]);
+    setIsLoading(false)
+
+    const reply: string = (() => {
+      if (typeof data.reply === "string") return data.reply;
+      if (data.reply && Array.isArray(data.reply.choices)) {
+        return data.reply.choices[0]?.message?.content || "No reply";
+      }
+      return "Invalid response format";
+    })();
+
+
+    setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
   };
 
   return (
-    <div className="flex flex-col h-full p-4 w-full">
+    <div className="flex flex-col h-full w-full">
       <ScrollArea className="flex-1 mb-4 space-y-4">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-3 rounded-md max-w-[70%] ${msg.role === "user"
+            className={`p-4 my-2 rounded-md max-w-[70%] whitespace-pre-wrap ${msg.role === "user"
               ? "ml-auto bg-primary text-primary-foreground"
               : "bg-muted"
               }`}
           >
-            {typeof msg.content === 'string' && msg.content}
-            {typeof msg.content !== 'string' && msg.content.choices.map((choice, index) => {
-              return <span key={index}>{choice.message.content}</span>
-            })}
+            <ReactMarkdown>{msg.content}</ReactMarkdown>
           </div>
         ))}
+        {isLoading && <div className="text-muted-foreground">Loading...</div>}
       </ScrollArea>
-      <div className="flex gap-2">
-        <Input
+      <div className="flex gap-2 items-end pb-8">
+        <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about government services..."
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          rows={3}
+          className="resize-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); // prevent newline
+              handleSend();
+            }
+          }}
         />
         <Button onClick={handleSend}>Send</Button>
       </div>
