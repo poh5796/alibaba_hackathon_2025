@@ -8,35 +8,35 @@ import OpenAI from "openai";
 
 interface Message {
   role: "user" | "assistant";
-  content: string|ChatCompletionResponse;
+  content: string | ChatCompletionResponse;
 }
 
 export type ChatCompletionResponse = {
-    id: string;
-    object: string;
-    created: number;
-    model: string;
-    system_fingerprint: string | null;
-    usage: {
-      prompt_tokens: number;
-      completion_tokens: number;
-      total_tokens: number;
-      prompt_tokens_details: {
-        cached_tokens: number;
-      };
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  system_fingerprint: string | null;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+    prompt_tokens_details: {
+      cached_tokens: number;
     };
-    choices: Array<{
-      index: number;
-      message: {
-        role: "assistant" | "user" | "system";
-        content: string;
-      };
-      finish_reason: string;
-      logprobs: unknown | null;
-    }>;
   };
+  choices: Array<{
+    index: number;
+    message: {
+      role: "assistant" | "user" | "system";
+      content: string;
+    };
+    finish_reason: string;
+    logprobs: unknown | null;
+  }>;
+};
 
-  
+
 export const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -69,23 +69,22 @@ export const Chatbot = () => {
   };
 
   return (
-    <div className="flex flex-col h-full p-4">
+    <div className="flex flex-col h-full p-4 w-full">
       <ScrollArea className="flex-1 mb-4 space-y-4">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-3 rounded-md max-w-[70%] ${
-              msg.role === "user"
-                ? "ml-auto bg-primary text-primary-foreground"
-                : "bg-muted"
-            }`}
+            className={`p-3 rounded-md max-w-[70%] ${msg.role === "user"
+              ? "ml-auto bg-primary text-primary-foreground"
+              : "bg-muted"
+              }`}
           >
             {/* {msg.content.map(choice => {
                 return <span>{choice.message}</span>
             })} */}
             {typeof msg.content === 'string' && msg.content}
             {typeof msg.content !== 'string' && msg.content.choices.map((choice, index) => {
-                return <span key={index}>{choice.message.content}</span>
+              return <span key={index}>{choice.message.content}</span>
             })}
           </div>
         ))}
