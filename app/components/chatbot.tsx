@@ -1,10 +1,8 @@
-// components/Chatbot.tsx
 "use client";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import OpenAI from "openai";
 import ReactMarkdown from "react-markdown";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserProfile } from "../lib/user-profile-context";
@@ -12,6 +10,17 @@ import { useUserProfile } from "../lib/user-profile-context";
 type Message = {
   role: "assistant" | "user";
   content: string;
+  references?: Document[];
+};
+
+type Document = {
+  images: string[];
+  doc_name: string;
+  text: string;
+  index_id: string;
+  title: string;
+  doc_id: string;
+  _score_with_weight?: number;
 };
 
 export const Chatbot = () => {
@@ -32,50 +41,60 @@ export const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-  
+
     const newMessage: Message = { role: "user", content: input };
-    
-    // Prepare updated messages array before setting state
     const updatedMessages = [...messages, newMessage];
-    
-    // Optimistically update state so UI shows user message immediately
+
     setMessages(updatedMessages);
     setIsLoading(true);
     setInput("");
-  
+
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: updatedMessages, profile }),  // send `messages` plural!
+      body: JSON.stringify({ messages: updatedMessages, profile }),
     });
-  
-    const data = await response.json();
+
+    const res = await response.json();
+
+    console.log(res)
     setIsLoading(false);
-  
-    // Extract reply string safely
-    const reply: string = typeof data.reply === "string"
-      ? data.reply
-      : data.reply?.choices?.[0]?.message?.content || "No reply";
-  
-    // Append assistant's reply
-    setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    setMessages((prev) => [...prev, { role: "assistant", content: res.content, references: res.references }]);
   };
-  
 
   return (
     <div className="flex flex-col justify-between h-full w-full">
       <ScrollArea className="flex-1 mb-4 space-y-4">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-4 my-2 rounded-md max-w-[70%] whitespace-pre-wrap ${msg.role === "user"
-              ? "ml-auto bg-primary text-primary-foreground"
-              : "bg-muted"
-              }`}
-          >
-            <ReactMarkdown>{msg.content}</ReactMarkdown>
-          </div>
-        ))}
+        {messages.map((msg, index) => {
+         const superscriptMap = ["¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹", "¹⁰"];
+
+         const contentWithUnicode = msg.content.replace(/<ref>\[(\d+)\]<\/ref>/g, (_, num) => {
+           const index = parseInt(num) - 1;
+           return superscriptMap[index] || `(${num})`;
+         });
+         
+          return (
+            <div
+              key={index}
+              className={`p-4 my-2 rounded-md max-w-[70%] whitespace-pre-wrap ${msg.role === "user"
+                ? "ml-auto bg-primary text-primary-foreground"
+                : "bg-muted"
+                }`}
+            >
+              <ReactMarkdown>{contentWithUnicode}</ReactMarkdown>
+              {msg.role === "assistant" && msg.references && msg.references.length > 0 && (
+                <div className="mt-2 text-sm text-muted-foreground border-t pt-2 space-y-1">
+                  <div className="font-semibold">References:</div>
+                  {msg.references.map((ref, idx) => (
+                    <div key={idx}>
+                      {idx + 1}. <span className="italic">{ref.title}</span> — {ref.doc_name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
         {isLoading && <div className="text-muted-foreground">Loading...</div>}
       </ScrollArea>
       <div className="flex gap-2 items-end">
@@ -87,7 +106,7 @@ export const Chatbot = () => {
           className="resize-none"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault(); // prevent newline
+              e.preventDefault();
               handleSend();
             }
           }}
