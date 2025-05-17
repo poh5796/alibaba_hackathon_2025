@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       ? `You are assisting ${profile.name}, a ${profile.age}-year-old ${profile.occupation} in ${profile.location}. ${incomeStatement} ${languageInstruction} Based on the user's profile, provide relevant information and assistance.`
       : "You are a helpful assistant for Malaysian government services.";
 
-    const extendedsystemMessage = `When the users ask question, try to always provide direct links to the relevant government services. If the user asks about a specific service, provide a brief overview and direct them to the official website for more information. Always be polite and professional in your responses. ${systemMessage}`;
+    const extendedsystemMessage = `When the users ask question, try to always provide direct links to the relevant government services. If the user asks about a specific service, provide a brief overview and direct them to the official website for more information. Always be polite and professional in your responses.`;
 
     const fullMessages = [{ role: "system", content: systemMessage + extendedsystemMessage }, ...messages];
     const url = `https://dashscope-intl.aliyuncs.com/api/v1/apps/${process.env.APP_ID}/completion`;
