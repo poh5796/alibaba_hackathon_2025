@@ -1,5 +1,12 @@
+import pool from "@/app/lib/db";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
+
+// Initialize OpenAI client with DashScope
+const openai = new OpenAI({
+  apiKey: process.env.DASHSCOPE_API_KEY!,
+  baseURL: process.env.DASHSCOPE_URL,
+});
 
 async function getAIResponse(message: string): Promise<any> {
   const openai = new OpenAI(
