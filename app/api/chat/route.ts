@@ -1,6 +1,7 @@
 // app/api/chat/route.ts
 import axios from "axios";
 import { NextRequest } from "next/server";
+import OpenAI from "openai";
 
 const PAI_ENDPOINT = process.env.PAI_ENDPOINT!;
 const PAI_TOKEN = process.env.PAI_TOKEN!;
@@ -35,12 +36,12 @@ async function getAIResponse(message: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const { message } = await req.json();
-  try {
-    const reply = await getAIResponse(message);
-    return Response.json({ reply });
-  } catch (error) {
-    console.error(error);
-    return Response.json({ reply: "Sorry, I'm having trouble connecting right now." });
-  }
+    const { message } = await req.json();
+    try {
+        const reply = await getAIResponse(message);
+        return Response.json({ reply });
+    } catch (error) {
+        console.error(error);
+        return Response.json({ reply: "Sorry, I'm having trouble connecting right now." });
+    }
 }

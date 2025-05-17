@@ -4,12 +4,39 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import OpenAI from "openai";
 
 interface Message {
   role: "user" | "assistant";
-  content: string;
+  content: string|ChatCompletionResponse;
 }
 
+export type ChatCompletionResponse = {
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    system_fingerprint: string | null;
+    usage: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+      prompt_tokens_details: {
+        cached_tokens: number;
+      };
+    };
+    choices: Array<{
+      index: number;
+      message: {
+        role: "assistant" | "user" | "system";
+        content: string;
+      };
+      finish_reason: string;
+      logprobs: unknown | null;
+    }>;
+  };
+
+  
 export const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -37,6 +64,7 @@ export const Chatbot = () => {
     });
 
     const data = await response.json();
+    console.log(data)
     setMessages((prev) => [
       ...prev,
       { role: "assistant", content: data.reply || "I'm here to help!" },
@@ -55,7 +83,13 @@ export const Chatbot = () => {
                 : "bg-muted"
             }`}
           >
-            {msg.content}
+            {/* {msg.content.map(choice => {
+                return <span>{choice.message}</span>
+            })} */}
+            {typeof msg.content === 'string' && msg.content}
+            {typeof msg.content !== 'string' && msg.content.choices.map((choice, index) => {
+                return <span key={index}>{choice.message.content}</span>
+            })}
           </div>
         ))}
       </ScrollArea>
