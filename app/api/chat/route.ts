@@ -1,28 +1,37 @@
 // app/api/chat/route.ts
+import axios from "axios";
 import { NextRequest } from "next/server";
 
 const PAI_ENDPOINT = process.env.PAI_ENDPOINT!;
 const PAI_TOKEN = process.env.PAI_TOKEN!;
 
 async function getAIResponse(message: string): Promise<string> {
-  const response = await fetch(PAI_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${PAI_TOKEN}`,
+  const apiKey = 'sk-55b97806532b4dfeb709ac62b477f881';
+  const appId = '5b1d9b03606a4f568ed6f98f95fb85bc';
+
+  const url = `https://dashscope-intl.aliyuncs.com/api/v1/apps/${appId}/completion`;
+
+  const inputData = {
+    input: {
+      prompt: message
     },
-    body: JSON.stringify({
-      prompt: message,
-      // Add other parameters based on PAI model input format
-    }),
+    parameters: {},
+    debug: {}
+  };
+
+
+  const response = await axios.post(url, inputData, {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    }
   });
 
-  if (!response.ok) {
+  if (response.statusText == "OK") {
+    return response.data.output.text;
+  } else {
     throw new Error("Failed to fetch from PAI");
   }
-
-  const data = await response.json();
-  return data.output.text || "No response from AI.";
 }
 
 export async function POST(req: NextRequest) {

@@ -21,15 +21,18 @@ export const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+    const apiKey = 'sk-55b97806532b4dfeb709ac62b477f881';
 
     const newMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
 
-    // Simulate API call to PAI or Model Studio
     const response = await fetch("/api/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ message: input }),
     });
 
