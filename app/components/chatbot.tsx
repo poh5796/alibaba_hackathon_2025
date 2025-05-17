@@ -32,32 +32,35 @@ export const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+  
     const newMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, newMessage]);
-    setIsLoading(true)
+    
+    // Prepare updated messages array before setting state
+    const updatedMessages = [...messages, newMessage];
+    
+    // Optimistically update state so UI shows user message immediately
+    setMessages(updatedMessages);
+    setIsLoading(true);
     setInput("");
-
-    // Simulate API call to PAI or Model Studio
+  
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input, profile }),
+      body: JSON.stringify({ messages: updatedMessages, profile }),  // send `messages` plural!
     });
-
+  
     const data = await response.json();
-    setIsLoading(false)
-
-    const reply: string = (() => {
-      if (typeof data.reply === "string") return data.reply;
-      if (data.reply && Array.isArray(data.reply.choices)) {
-        return data.reply.choices[0]?.message?.content || "No reply";
-      }
-      return "Invalid response format";
-    })();
-
-
+    setIsLoading(false);
+  
+    // Extract reply string safely
+    const reply: string = typeof data.reply === "string"
+      ? data.reply
+      : data.reply?.choices?.[0]?.message?.content || "No reply";
+  
+    // Append assistant's reply
     setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
   };
+  
 
   return (
     <div className="flex flex-col justify-between h-full w-full">
