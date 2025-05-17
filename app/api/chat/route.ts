@@ -1,4 +1,3 @@
-// app/api/chat/route.ts
 import axios from "axios";
 import { NextRequest } from "next/server";
 
